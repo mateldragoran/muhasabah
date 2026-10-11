@@ -1,0 +1,6 @@
+{
+  "name": "Muhasabah: Sufi Night Accounting & Energy Ledger",
+  "description": "Daily spiritual self-accounting, energy ledger, and bedtime Sunnah protections based on the teachings of Shaykh Nurjan Mirahmadi.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

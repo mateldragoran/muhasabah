@@ -1,0 +1,6 @@
+{
+  "summary":  "Implementation plan for decluttering the Muhasabah accounting experience:\n1. Quiet intention landing state featuring a daily contemplation quote and prominent 'Begin Accounting' trigger, removing initial stepper and mode tabs.\n2. Sticky compact top progress bar that smoothly activates once accounting starts, guiding the user through gateways, ledger, and istighfar.\n3. Post-completion transition to a peaceful summary card featuring an optional 'Review All Sections' button to inspect or edit all audit entries.\n4. Clean ASCII state and architecture diagram with warm ivory, cream, and deep emerald aesthetic tokens.",
+  "updatedAt":  "2026-10-11T15:17:05.677225701Z",
+  "requestFeedback":  true,
+  "userFacing":  true
+}
