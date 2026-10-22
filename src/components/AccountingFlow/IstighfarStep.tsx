@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { RotateCcw, Wind, Heart, ArrowLeft, ShieldCheck } from 'lucide-react';
+import { RotateCcw, Wind, Heart, ArrowLeft, ShieldCheck, Sparkles } from 'lucide-react';
 import { sound } from '../../services/soundService';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 
 interface IstighfarStepProps {
   istighfarCount: number;
@@ -48,7 +48,7 @@ export const IstighfarStep: React.FC<IstighfarStepProps> = ({
     sound.playBeadChime();
     if (typeof window !== 'undefined' && 'vibrate' in navigator) {
       try {
-        navigator.vibrate(15);
+        navigator.vibrate(20);
       } catch {}
     }
     onChangeCount(istighfarCount + 1);
@@ -80,93 +80,99 @@ export const IstighfarStep: React.FC<IstighfarStepProps> = ({
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -10 }}
-      transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+      transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
       className="mx-auto max-w-xl px-2 space-y-4"
     >
-      <div className="glass-card rounded-3xl p-5 sm:p-7 space-y-5 relative overflow-hidden bg-[#FFFFFF] border border-[#E8DFD0] shadow-sm">
-        {/* Header */}
-        <div className="flex items-center justify-between border-b border-[#E8DFD0] pb-3 relative z-10">
+      <div className="glass-card rounded-3xl p-5 sm:p-7 space-y-5 relative overflow-hidden bg-[#111827]/70 border border-white/[0.08] shadow-2xl">
+        {/* Header Ribbon */}
+        <div className="flex items-center justify-between border-b border-white/[0.08] pb-3 relative z-10">
           <div>
-            <span className="text-[11px] font-mono tracking-widest text-[#064E3B] font-semibold uppercase block">
-              Step 7 of 8
+            <span className="text-[11px] font-mono tracking-widest text-[#10B981] font-semibold uppercase block">
+              Purification & Sealing
             </span>
-            <h2 className="font-cinzel text-xl sm:text-2xl font-bold tracking-wide text-[#1E293B]">
+            <h2 className="font-cinzel text-xl sm:text-2xl font-bold tracking-wide text-[#F9FAFB]">
               Istighfar
             </h2>
           </div>
-          <div className="text-xs text-[#64748B] font-mono">
+          <div className="text-xs text-[#10B981] font-mono font-semibold">
             {istighfarCount} / {istighfarTarget}
           </div>
         </div>
 
-        {/* Formula Display - Clean & Centered */}
-        <div className="rounded-2xl border border-[#E8DFD0] bg-[#FAF7F2] p-4 text-center space-y-1 relative z-10">
-          <div className="font-arabic text-2xl sm:text-3xl text-[#1E293B] leading-relaxed dir-rtl">
+        {/* Sacred Formula Display */}
+        <div className="rounded-2xl border border-white/[0.06] bg-[#0B1120]/70 p-4 text-center space-y-1.5 relative z-10">
+          <div className="font-arabic text-2xl sm:text-3xl text-[#10B981] leading-relaxed dir-rtl">
             أَسْتَغْفِرُ اللهَ الْعَظِيمَ وَأَتُوبُ إِلَيْهِ
           </div>
-          <div className="text-xs text-[#064E3B] font-medium italic">
+          <div className="text-xs text-[#9CA3AF] italic">
             Astaghfirullah al-Azim wa atubu ilayh
           </div>
         </div>
 
-        {/* The Minimal Tasbih Bead Counter */}
+        {/* Luminous Interactive Tasbih Counter */}
         <div className="flex flex-col items-center justify-center py-2 relative z-10">
           <div className="relative flex items-center justify-center">
-            {/* Outer Progress Ring */}
-            <svg className="w-44 h-44 -rotate-90 transform select-none">
+            {/* Outer Glowing Progress SVG */}
+            <svg className="w-48 h-48 -rotate-90 transform select-none">
               <circle
-                cx="88"
-                cy="88"
-                r="72"
+                cx="96"
+                cy="96"
+                r="78"
                 stroke="currentColor"
                 strokeWidth="5"
-                className="text-[#E8DFD0]/70"
+                className="text-white/[0.06]"
                 fill="transparent"
               />
               <circle
-                cx="88"
-                cy="88"
-                r="72"
-                stroke="currentColor"
-                strokeWidth="5"
-                strokeDasharray={2 * Math.PI * 72}
-                strokeDashoffset={2 * Math.PI * 72 * (1 - progress / 100)}
+                cx="96"
+                cy="96"
+                r="78"
+                stroke="url(#emeraldGradient)"
+                strokeWidth="6"
+                strokeDasharray={2 * Math.PI * 78}
+                strokeDashoffset={2 * Math.PI * 78 * (1 - progress / 100)}
                 strokeLinecap="round"
-                className="text-[#064E3B] transition-all duration-150"
+                className="transition-all duration-150"
                 fill="transparent"
               />
+              <defs>
+                <linearGradient id="emeraldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#10B981" />
+                  <stop offset="100%" stopColor="#F59E0B" />
+                </linearGradient>
+              </defs>
             </svg>
 
             {/* Inner Glowing Tap Button */}
             <button
               type="button"
               onClick={handleIncrement}
-              className="absolute h-32 w-32 rounded-full bg-[#FAF7F2] border border-[#C5A059] flex flex-col items-center justify-center hover:bg-[#FFFFFF] hover:border-[#064E3B] active:scale-95 transition-all shadow-sm focus:outline-none cursor-pointer"
+              className="absolute h-36 w-36 rounded-full bg-gradient-to-b from-[#1F2937] to-[#111827] border-2 border-emerald-500/30 flex flex-col items-center justify-center hover:border-emerald-400 active:scale-95 transition-all shadow-[0_0_25px_rgba(16,185,129,0.15)] focus:outline-none cursor-pointer group"
             >
-              <span className="font-mono text-4xl font-bold text-[#1E293B] tabular-nums tracking-tight">
+              <span className="font-mono text-4xl sm:text-5xl font-bold text-[#F9FAFB] tabular-nums tracking-tight group-hover:text-[#10B981] transition-colors">
                 {istighfarCount}
               </span>
-              <span className="text-[10px] text-[#64748B] font-mono mt-0.5">
+              <span className="text-[10px] text-[#9CA3AF] font-mono mt-0.5">
                 Target: {istighfarTarget}
               </span>
-              <span className="text-[8px] uppercase tracking-widest text-[#064E3B] font-bold mt-0.5">
+              <span className="text-[9px] uppercase tracking-widest text-[#10B981] font-bold mt-1">
                 TAP TO COUNT
               </span>
             </button>
           </div>
 
-          {/* Target Pickers */}
-          <div className="flex items-center gap-2 mt-3">
+          {/* Quick Target Chips & Reset */}
+          <div className="flex items-center gap-2 mt-4">
             <button
               type="button"
               onClick={() => {
                 sound.playBeadChime();
                 onChangeTarget(100);
               }}
-              className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${
+              className={`px-3 py-1 rounded-xl text-xs font-medium border transition-colors cursor-pointer ${
                 istighfarTarget === 100
-                  ? 'border-[#064E3B] text-white bg-[#064E3B]'
-                  : 'border-[#E8DFD0] text-[#64748B] hover:text-[#1E293B] bg-[#FFFFFF]'
+                  ? 'border-emerald-500/50 text-white bg-emerald-600/40 shadow-xs'
+                  : 'border-white/[0.08] text-[#9CA3AF] hover:text-[#F9FAFB] bg-[#1F2937]/40'
               }`}
             >
               100x
@@ -177,73 +183,94 @@ export const IstighfarStep: React.FC<IstighfarStepProps> = ({
                 sound.playBeadChime();
                 onChangeTarget(500);
               }}
-              className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${
+              className={`px-3 py-1 rounded-xl text-xs font-medium border transition-colors cursor-pointer ${
                 istighfarTarget === 500
-                  ? 'border-[#064E3B] text-white bg-[#064E3B]'
-                  : 'border-[#E8DFD0] text-[#64748B] hover:text-[#1E293B] bg-[#FFFFFF]'
+                  ? 'border-emerald-500/50 text-white bg-emerald-600/40 shadow-xs'
+                  : 'border-white/[0.08] text-[#9CA3AF] hover:text-[#F9FAFB] bg-[#1F2937]/40'
               }`}
             >
               500x
             </button>
             <button
               type="button"
+              onClick={() => {
+                sound.playBeadChime();
+                onChangeTarget(1000);
+              }}
+              className={`px-3 py-1 rounded-xl text-xs font-medium border transition-colors cursor-pointer ${
+                istighfarTarget === 1000
+                  ? 'border-emerald-500/50 text-white bg-emerald-600/40 shadow-xs'
+                  : 'border-white/[0.08] text-[#9CA3AF] hover:text-[#F9FAFB] bg-[#1F2937]/40'
+              }`}
+            >
+              1000x
+            </button>
+            <button
+              type="button"
               onClick={() => onChangeCount(0)}
               title="Reset counter"
-              className="p-1 rounded-full text-[#64748B] hover:text-rose-600 transition-colors"
+              className="p-1.5 rounded-xl border border-white/[0.08] text-[#9CA3AF] hover:text-rose-400 hover:bg-white/[0.04] transition-colors cursor-pointer ml-1"
             >
               <RotateCcw className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>
 
-        {/* Optional Conscious Breathing */}
-        <div className="rounded-2xl border border-[#E8DFD0] bg-[#FAF7F2] p-3 space-y-2">
+        {/* Collapsible Conscious Breathing (Hush dar Dam) */}
+        <div className="rounded-2xl border border-white/[0.06] bg-[#1F2937]/40 p-3 space-y-2">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1.5 text-xs font-medium text-[#1E293B]">
-              <Wind className="w-3.5 h-3.5 text-[#064E3B]" />
+            <div className="flex items-center gap-2 text-xs font-medium text-[#F9FAFB]">
+              <Wind className="w-4 h-4 text-[#10B981]" />
               <span>Conscious Breath (Hush dar Dam)</span>
             </div>
             <button
               type="button"
               onClick={() => setBreathActive(!breathActive)}
-              className={`px-2.5 py-0.5 rounded-full text-xs font-medium border transition-colors ${
+              className={`px-2.5 py-0.5 rounded-full text-xs font-medium border transition-colors cursor-pointer ${
                 breathActive
-                  ? 'border-[#064E3B] text-white bg-[#064E3B]'
-                  : 'border-[#E8DFD0] text-[#64748B] hover:text-[#1E293B] bg-[#FFFFFF]'
+                  ? 'border-emerald-500/50 text-white bg-emerald-600/40'
+                  : 'border-white/[0.08] text-[#9CA3AF] hover:text-[#F9FAFB] bg-white/[0.04]'
               }`}
             >
               {breathActive ? 'Pause' : 'Start'}
             </button>
           </div>
 
-          {breathActive && (
-            <div className="py-2 flex flex-col items-center justify-center text-center">
-              <div
-                className={`w-14 h-14 rounded-full flex items-center justify-center border transition-all duration-1000 ${
-                  breathPhase === 'inhale'
-                    ? 'scale-110 border-[#064E3B] bg-[#ECFDF5] text-[#064E3B]'
-                    : breathPhase === 'hold'
-                    ? 'scale-105 border-[#C5A059] bg-[#FDF8ED] text-[#B88728]'
-                    : 'scale-95 border-[#E8DFD0] bg-[#FFFFFF] text-[#64748B]'
-                }`}
+          <AnimatePresence>
+            {breathActive && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="py-3 flex flex-col items-center justify-center text-center overflow-hidden"
               >
-                <Heart className="w-5 h-5" />
-              </div>
-              <div className="text-xs font-medium text-[#1E293B] mt-2 uppercase tracking-wider">
-                {breathPhase === 'inhale' && 'Inhale Light'}
-                {breathPhase === 'hold' && 'Hold'}
-                {breathPhase === 'exhale' && 'Exhale'}
-              </div>
-            </div>
-          )}
+                <div
+                  className={`w-16 h-16 rounded-full flex items-center justify-center border transition-all duration-1000 ${
+                    breathPhase === 'inhale'
+                      ? 'scale-115 border-emerald-400 bg-emerald-500/20 text-[#10B981] shadow-[0_0_20px_#10B981]'
+                      : breathPhase === 'hold'
+                      ? 'scale-105 border-amber-400 bg-amber-500/20 text-[#F59E0B] shadow-[0_0_15px_#F59E0B]'
+                      : 'scale-90 border-white/20 bg-white/5 text-[#9CA3AF]'
+                  }`}
+                >
+                  <Heart className="w-6 h-6" />
+                </div>
+                <div className="text-xs font-semibold text-[#F9FAFB] mt-2.5 uppercase tracking-wider">
+                  {breathPhase === 'inhale' && 'Inhale Divine Light'}
+                  {breathPhase === 'hold' && 'Hold in Contemplation'}
+                  {breathPhase === 'exhale' && 'Exhale Darkness'}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
-        {/* Minimal Optional Reflection Note */}
+        {/* Collapsible Closing Reflection Note */}
         <div>
           <button
             type="button"
             onClick={() => setShowNote(!showNote)}
-            className="text-xs text-[#064E3B] font-medium hover:text-[#043B2C] transition-colors"
+            className="text-xs text-[#10B981] font-semibold hover:brightness-110 transition-colors cursor-pointer"
           >
             {showNote ? 'Hide note' : reflectionNote ? 'Edit closing note' : '+ Add closing note'}
           </button>
@@ -252,21 +279,21 @@ export const IstighfarStep: React.FC<IstighfarStepProps> = ({
               rows={2}
               value={reflectionNote}
               onChange={(e) => onChangeNote(e.target.value)}
-              placeholder="Closing intention or prayer..."
-              className="mt-2 w-full rounded-2xl border border-[#E8DFD0] bg-[#FAF7F2] p-3 text-xs text-[#1E293B] placeholder-[#64748B]/50 focus:border-[#064E3B] focus:bg-[#FFFFFF] focus:outline-none transition-all"
+              placeholder="Closing intention, prayer, or reflection..."
+              className="mt-2 w-full rounded-2xl border border-white/[0.08] bg-[#0B1120]/70 p-3 text-xs text-[#F9FAFB] placeholder-[#9CA3AF]/40 focus:border-emerald-500/50 focus:outline-none transition-all"
             />
           )}
         </div>
 
         {/* Navigation Step */}
-        <div className="flex items-center justify-between pt-3 border-t border-[#E8DFD0]">
+        <div className="flex items-center justify-between pt-3 border-t border-white/[0.08]">
           <button
             type="button"
             onClick={() => {
               sound.playStepTransition();
               onPrev();
             }}
-            className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-[#64748B] hover:text-[#1E293B] hover:bg-[#FAF7F2] transition-colors min-h-[44px]"
+            className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-[#9CA3AF] hover:text-[#F9FAFB] hover:bg-white/[0.06] transition-colors min-h-[44px] cursor-pointer"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
             <span>Back</span>
@@ -276,10 +303,10 @@ export const IstighfarStep: React.FC<IstighfarStepProps> = ({
             type="button"
             disabled={isSaving}
             onClick={handleSeal}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#064E3B] text-xs font-bold text-white hover:bg-[#043B2C] active:scale-98 transition-all shadow-sm disabled:opacity-50 min-h-[44px]"
+            className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#064E3B] via-[#059669] to-[#F59E0B] text-xs font-bold text-white hover:brightness-110 active:scale-98 transition-all shadow-lg shadow-emerald-950/50 disabled:opacity-50 min-h-[44px] cursor-pointer"
           >
-            <ShieldCheck className="w-4 h-4 text-white" />
-            <span>{isSaving ? 'Sealing...' : 'Seal Entry'}</span>
+            <ShieldCheck className="w-4 h-4 text-[#F59E0B]" />
+            <span>{isSaving ? 'Sealing...' : '✦ Seal Tonight\'s Entry'}</span>
           </button>
         </div>
       </div>

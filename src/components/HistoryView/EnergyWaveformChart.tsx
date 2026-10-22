@@ -9,13 +9,12 @@ interface EnergyWaveformChartProps {
 export const EnergyWaveformChart: React.FC<EnergyWaveformChartProps> = ({ records }) => {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
-  // Take chronological records (oldest to newest, max 14)
   const sortedRecords = [...records].reverse().slice(-14);
 
   if (sortedRecords.length === 0) {
     return (
-      <div className="py-12 text-center text-xs text-[#64748B]">
-        No daily records logged yet to generate an energy waveform. Complete today's accounting!
+      <div className="py-12 text-center text-xs text-[#9CA3AF]">
+        No daily records logged yet to generate an energy waveform. Complete tonight's accounting!
       </div>
     );
   }
@@ -25,13 +24,11 @@ export const EnergyWaveformChart: React.FC<EnergyWaveformChartProps> = ({ record
   const paddingX = 40;
   const paddingY = 30;
 
-  // Find max and min balance
   const values = sortedRecords.map((r) => r.netEnergy);
   const maxVal = Math.max(50, ...values);
   const minVal = Math.min(-50, ...values);
   const range = maxVal - minVal || 100;
 
-  // Map to SVG coordinates
   const points = sortedRecords.map((rec, idx) => {
     const x = paddingX + (idx / Math.max(1, sortedRecords.length - 1)) * (width - 2 * paddingX);
     const normalizedY = (rec.netEnergy - minVal) / range;
@@ -39,7 +36,6 @@ export const EnergyWaveformChart: React.FC<EnergyWaveformChartProps> = ({ record
     return { x, y, record: rec };
   });
 
-  // Calculate smooth Bézier curve
   const createSmoothPath = (pts: { x: number; y: number }[]) => {
     if (pts.length === 0) return '';
     if (pts.length === 1) return `M ${pts[0].x} ${pts[0].y}`;
@@ -62,11 +58,8 @@ export const EnergyWaveformChart: React.FC<EnergyWaveformChartProps> = ({ record
   };
 
   const linePath = createSmoothPath(points);
-  // Area fill under the curve down to bottom
   const areaPath = `${linePath} L ${points[points.length - 1].x} ${height - paddingY} L ${points[0].x} ${height - paddingY} Z`;
-
-  // Zero baseline Y coordinate
-  const zeroY = height - paddingY - (0 - minVal) / range * (height - 2 * paddingY);
+  const zeroY = height - paddingY - ((0 - minVal) / range) * (height - 2 * paddingY);
 
   return (
     <div className="w-full space-y-3">
@@ -76,15 +69,15 @@ export const EnergyWaveformChart: React.FC<EnergyWaveformChartProps> = ({ record
           className="w-full h-auto overflow-visible select-none"
         >
           <defs>
-            <linearGradient id="waveGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor="#064E3B" stopOpacity="0.22" />
-              <stop offset="60%" stopColor="#C5A059" stopOpacity="0.08" />
-              <stop offset="100%" stopColor="#FAF7F2" stopOpacity="0.0" />
+            <linearGradient id="waveGradientDark" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor="#10B981" stopOpacity="0.25" />
+              <stop offset="60%" stopColor="#F59E0B" stopOpacity="0.08" />
+              <stop offset="100%" stopColor="#0B1120" stopOpacity="0.0" />
             </linearGradient>
-            <linearGradient id="lineStrokeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <linearGradient id="lineStrokeDark" x1="0%" y1="0%" x2="100%" y2="0%">
               <stop offset="0%" stopColor="#064E3B" />
-              <stop offset="50%" stopColor="#0B5A44" />
-              <stop offset="100%" stopColor="#C5A059" />
+              <stop offset="50%" stopColor="#10B981" />
+              <stop offset="100%" stopColor="#F59E0B" />
             </linearGradient>
           </defs>
 
@@ -94,31 +87,31 @@ export const EnergyWaveformChart: React.FC<EnergyWaveformChartProps> = ({ record
             y1={zeroY}
             x2={width - paddingX}
             y2={zeroY}
-            stroke="#E8DFD0"
+            stroke="rgba(255,255,255,0.12)"
             strokeDasharray="4,4"
           />
           <text
             x={paddingX - 10}
             y={zeroY + 3}
             textAnchor="end"
-            className="fill-[#64748B] text-[9px] font-mono"
+            className="fill-[#9CA3AF] text-[9px] font-mono"
           >
             0
           </text>
 
           {/* Area Fill */}
-          <path d={areaPath} fill="url(#waveGradient)" />
+          <path d={areaPath} fill="url(#waveGradientDark)" />
 
           {/* Luminous Spline */}
           <path
             d={linePath}
             fill="none"
-            stroke="url(#lineStrokeGrad)"
+            stroke="url(#lineStrokeDark)"
             strokeWidth="3"
             strokeLinecap="round"
           />
 
-          {/* Interactive Nodes */}
+          {/* Nodes */}
           {points.map((p, idx) => {
             const isHovered = hoveredIndex === idx;
             const isPositive = p.record.netEnergy >= 0;
@@ -133,44 +126,44 @@ export const EnergyWaveformChart: React.FC<EnergyWaveformChartProps> = ({ record
                   cx={p.x}
                   cy={p.y}
                   r={isHovered ? 7 : 4}
-                  fill={isPositive ? '#064E3B' : '#E11D48'}
-                  stroke="#FFFFFF"
+                  fill={isPositive ? '#10B981' : '#F43F5E'}
+                  stroke="#0B1120"
                   strokeWidth="2"
-                  className="transition-all duration-200"
+                  className="transition-all duration-150"
                 />
+
+                {/* Tooltip */}
+                {isHovered && (
+                  <g>
+                    <rect
+                      x={p.x - 38}
+                      y={p.y - 32}
+                      width="76"
+                      height="22"
+                      rx="6"
+                      fill="#111827"
+                      stroke="rgba(255,255,255,0.2)"
+                    />
+                    <text
+                      x={p.x}
+                      y={p.y - 18}
+                      textAnchor="middle"
+                      className="fill-[#F9FAFB] text-[10px] font-mono font-bold"
+                    >
+                      {p.record.netEnergy >= 0 ? `+${p.record.netEnergy}` : p.record.netEnergy} pts
+                    </text>
+                  </g>
+                )}
               </g>
             );
           })}
         </svg>
-
-        {/* Hover Tooltip */}
-        {hoveredIndex !== null && points[hoveredIndex] && (
-          <div
-            className="absolute -top-1 rounded-xl bg-[#FFFFFF] border border-[#E8DFD0] px-3 py-1.5 text-xs text-[#1E293B] shadow-xl pointer-events-none transform -translate-x-1/2 -translate-y-full"
-            style={{
-              left: `${(points[hoveredIndex].x / width) * 100}%`,
-              top: `${(points[hoveredIndex].y / height) * 100}%`,
-            }}
-          >
-            <div className="font-mono text-[11px] text-[#064E3B] font-semibold">
-              {points[hoveredIndex].record.date}
-            </div>
-            <div className="font-bold">
-              {points[hoveredIndex].record.netEnergy > 0 ? `+${points[hoveredIndex].record.netEnergy}` : points[hoveredIndex].record.netEnergy} pts
-              <span className="text-[10px] text-[#64748B] font-normal ml-1">
-                ({points[hoveredIndex].record.balanceStatus})
-              </span>
-            </div>
-          </div>
-        )}
       </div>
 
-      <div className="flex items-center justify-between text-[11px] text-[#64748B] px-2 font-mono">
+      {/* Date Axis Badges */}
+      <div className="flex items-center justify-between text-[10px] font-mono text-[#9CA3AF] px-2">
         <span>{sortedRecords[0]?.date}</span>
-        <div className="flex items-center gap-1 text-[#064E3B] font-medium">
-          <Scale className="w-3 h-3" />
-          <span>Energetic Trajectory</span>
-        </div>
+        <span>Net Light Waves (14 Days)</span>
         <span>{sortedRecords[sortedRecords.length - 1]?.date}</span>
       </div>
     </div>

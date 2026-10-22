@@ -8,8 +8,7 @@ import {
   Scale,
   Sparkles,
   ChevronLeft,
-  X,
-  Check,
+  HeartHandshake,
 } from 'lucide-react';
 import { JourneyStep } from './JourneyStepper';
 import { sound } from '../../services/soundService';
@@ -27,6 +26,7 @@ const STEPS: { id: JourneyStep; label: string; subLabel: string; icon: React.Ele
   { id: 'tongue', label: 'Tongue', subLabel: 'Lisan', icon: MessageSquare },
   { id: 'heart', label: 'Heart', subLabel: 'Qalb', icon: Heart },
   { id: 'body', label: 'Limbs', subLabel: 'Jawarih', icon: Shield },
+  { id: 'prophetic_connection', label: 'Prophetic Bond', subLabel: 'Rabita', icon: HeartHandshake },
   { id: 'ledger', label: 'Energy Ledger', subLabel: 'Mizan', icon: Scale },
   { id: 'istighfar', label: 'Istighfar', subLabel: 'Tawbah', icon: Sparkles },
 ];
@@ -48,8 +48,8 @@ export const StickyCompactStepper: React.FC<StickyCompactStepperProps> = ({
   };
 
   return (
-    <div className="sticky top-14 sm:top-16 z-20 -mx-4 sm:-mx-6 px-4 sm:px-6 py-2.5 bg-[#FAF7F2]/95 backdrop-blur-md border-b border-[#E8DFD0] shadow-2xs transition-all">
-      <div className="max-w-3xl mx-auto flex flex-col gap-2">
+    <div className="sticky top-14 sm:top-16 z-20 -mx-4 sm:-mx-6 px-4 sm:px-6 py-2.5 bg-[#0B1120]/90 backdrop-blur-xl border-b border-white/[0.08] shadow-md transition-all">
+      <div className="max-w-2xl mx-auto flex flex-col gap-2">
         {/* Top bar row: Exit / Step title / Counter */}
         <div className="flex items-center justify-between gap-3">
           {/* Current Step Identity */}
@@ -57,73 +57,64 @@ export const StickyCompactStepper: React.FC<StickyCompactStepperProps> = ({
             <button
               type="button"
               onClick={onExitToLanding}
-              title="Pause and return to overview"
-              className="p-1.5 -ml-1.5 rounded-lg text-[#64748B] hover:text-[#1E293B] hover:bg-[#FFFFFF] transition-colors"
+              title="Return to overview"
+              className="p-1.5 -ml-1.5 rounded-lg text-[#9CA3AF] hover:text-[#F9FAFB] hover:bg-white/[0.06] transition-colors cursor-pointer"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
 
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#064E3B] text-white shadow-2xs shrink-0">
-              <IconComponent className="h-3.5 w-3.5" />
-            </div>
-
-            <div className="truncate">
-              <div className="flex items-center gap-1.5">
-                <span className="text-xs font-bold text-[#1E293B] truncate">
-                  {activeStep.label}
-                </span>
-                <span className="text-[10px] font-arabic text-[#064E3B] opacity-80 hidden sm:inline">
-                  ({activeStep.subLabel})
-                </span>
+            <div className="flex items-center gap-2 min-w-0">
+              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-[#10B981]">
+                <IconComponent className="w-3.5 h-3.5" />
+              </div>
+              <div className="min-w-0">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xs font-bold text-[#F9FAFB] truncate">
+                    {activeStep.label}
+                  </span>
+                  <span className="text-[10px] font-arabic text-[#10B981] hidden sm:inline">
+                    ({activeStep.subLabel})
+                  </span>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Step metrics & quick dots */}
-          <div className="flex items-center gap-3 shrink-0">
-            {/* Step navigation dots on desktop/tablet */}
-            <div className="hidden sm:flex items-center gap-1.5">
-              {STEPS.map((step, idx) => {
-                const isCurrent = step.id === currentStep;
-                const isDone = completedSteps.has(step.id);
-                return (
-                  <button
-                    key={step.id}
-                    type="button"
-                    onClick={() => handleStepClick(step.id)}
-                    title={`${step.label} (${idx + 1} of ${STEPS.length})`}
-                    className={`h-2 rounded-full transition-all cursor-pointer ${
-                      isCurrent
-                        ? 'w-6 bg-[#064E3B]'
-                        : isDone
-                        ? 'w-2 bg-[#064E3B]/40 hover:bg-[#064E3B]/70'
-                        : 'w-2 bg-[#E8DFD0] hover:bg-[#CBD5E1]'
-                    }`}
-                  />
-                );
-              })}
-            </div>
-
-            <span className="text-[11px] font-mono font-semibold text-[#064E3B] tabular-nums">
-              {currentIndex >= 0 ? currentIndex + 1 : 1}/{STEPS.length}
+          {/* Step metrics & progress percentage */}
+          <div className="flex items-center gap-2 shrink-0">
+            <span className="text-[11px] font-mono text-[#10B981] font-semibold">
+              Step {currentIndex + 1}/{STEPS.length}
             </span>
-
-            <button
-              type="button"
-              onClick={onExitToLanding}
-              className="text-[11px] font-semibold text-[#64748B] hover:text-[#1E293B] transition-colors px-1.5 py-0.5 rounded hover:bg-[#FFFFFF]"
-            >
-              Pause
-            </button>
+            <span className="text-[10px] font-mono text-[#9CA3AF]">
+              ({progressPercent}%)
+            </span>
           </div>
         </div>
 
-        {/* Progress Fill Bar */}
-        <div className="h-1 w-full bg-[#E8DFD0]/70 rounded-full overflow-hidden">
-          <div
-            className="h-full bg-gradient-to-r from-[#064E3B] to-[#0D9488] transition-all duration-300 ease-out"
-            style={{ width: `${progressPercent}%` }}
-          />
+        {/* Segmented Progress Tracker (Clickable on all steps) */}
+        <div className="grid grid-cols-8 gap-1 sm:gap-1.5">
+          {STEPS.map((s, idx) => {
+            const isCompleted = completedSteps.has(s.id);
+            const isCurrent = s.id === currentStep;
+
+            return (
+              <button
+                key={s.id}
+                type="button"
+                onClick={() => handleStepClick(s.id)}
+                title={`${s.label} (${s.subLabel})`}
+                className={`group relative h-1.5 sm:h-2 rounded-full transition-all cursor-pointer ${
+                  isCurrent
+                    ? 'bg-gradient-to-r from-emerald-400 to-[#10B981] shadow-xs shadow-emerald-500/40 ring-1 ring-emerald-400/50'
+                    : isCompleted
+                    ? 'bg-emerald-600/80 hover:bg-emerald-500'
+                    : 'bg-white/[0.08] hover:bg-white/[0.15]'
+                }`}
+              >
+                <span className="sr-only">{s.label}</span>
+              </button>
+            );
+          })}
         </div>
       </div>
     </div>

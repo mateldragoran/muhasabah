@@ -9,7 +9,7 @@ import { OfflineIndicator } from './components/OfflineIndicator';
 import { storage } from './services/storageService';
 import { auth, AuthUser } from './services/authService';
 import { calculateStreakStats } from './services/streakService';
-import { MuhasabaRecord, BedtimeProtectionLog, GatewayType, GatewayAudit, EnergyTransaction } from './types/muhasabah';
+import { MuhasabaRecord, BedtimeProtectionLog, GatewayType, GatewayAudit, EnergyTransaction, PropheticConnectionState } from './types/muhasabah';
 import { formatSimpleDate } from './data/defaultData';
 
 export default function App() {
@@ -36,11 +36,20 @@ export default function App() {
   const [currentRecord, setCurrentRecord] = useState<MuhasabaRecord>(() => storage.getRecordByDate(selectedDate));
   const [currentBedtime, setCurrentBedtime] = useState<BedtimeProtectionLog>(() => storage.getBedtimeLogByDate(selectedDate));
 
-  // Reload records whenever selectedDate changes
+  // Reload records whenever selectedDate changes or storage updates (e.g. cloud sync completes)
   useEffect(() => {
     setCurrentRecord(storage.getRecordByDate(selectedDate));
     setCurrentBedtime(storage.getBedtimeLogByDate(selectedDate));
   }, [selectedDate]);
+
+  useEffect(() => {
+    const unsubscribeStorage = storage.subscribe(() => {
+      setCurrentRecord(storage.getRecordByDate(selectedDate));
+      setCurrentBedtime(storage.getBedtimeLogByDate(selectedDate));
+      refreshStreakStats();
+    });
+    return unsubscribeStorage;
+  }, [selectedDate, refreshStreakStats]);
 
   // Handler for updating gateway audit
   const handleGatewayChange = useCallback((gateway: GatewayType, updated: Partial<GatewayAudit>) => {
@@ -87,6 +96,21 @@ export default function App() {
     });
   }, []);
 
+  const handlePropheticConnectionChange = useCallback(
+    (state: PropheticConnectionState, note: string) => {
+      setCurrentRecord((prev) => {
+        const updatedRecord = {
+          ...prev,
+          propheticConnection: state,
+          propheticConnectionNote: note,
+        };
+        storage.saveRecord(updatedRecord);
+        return updatedRecord;
+      });
+    },
+    []
+  );
+
   const handleNoteChange = useCallback((note: string) => {
     setCurrentRecord((prev) => {
       const updatedRecord = { ...prev, reflectionNote: note };
@@ -124,12 +148,12 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#FAF7F2] text-[#1E293B] relative overflow-hidden">
-      {/* Subtle Warm Atmospheric Light */}
-      <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[700px] h-[500px] bg-gradient-to-b from-[#064E3B]/05 via-[#C5A059]/04 to-transparent blur-[120px]" />
-        <div className="absolute top-1/3 -left-48 w-[400px] h-[400px] bg-[#C5A059]/05 blur-[100px]" />
-        <div className="absolute bottom-10 -right-48 w-[450px] h-[450px] bg-[#064E3B]/05 blur-[120px]" />
+    <div className="min-h-screen flex flex-col bg-[#0B1120] text-[#F9FAFB] relative overflow-hidden">
+      {/* Sacred Night Sky Ambient Light */}
+      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+        <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[700px] h-[500px] bg-gradient-to-b from-emerald-500/10 via-amber-500/05 to-transparent blur-[140px]" />
+        <div className="absolute top-1/3 -left-48 w-[400px] h-[400px] bg-emerald-600/10 blur-[120px]" />
+        <div className="absolute bottom-10 -right-48 w-[450px] h-[450px] bg-amber-500/08 blur-[130px]" />
       </div>
 
       {/* Navigation (Responsive Desktop Top Bar & Ergonomic Mobile Header / Bottom Bar) */}
@@ -153,6 +177,7 @@ export default function App() {
             record={currentRecord}
             selectedDate={selectedDate}
             onUpdateGateway={handleGatewayChange}
+            onUpdatePropheticConnection={handlePropheticConnectionChange}
             onUpdateTransactions={handleTransactionsChange}
             onUpdateIstighfar={handleIstighfarChange}
             onUpdateTarget={handleTargetChange}
@@ -201,12 +226,12 @@ export default function App() {
       />
 
       {/* Understated Dignified Footer - Desktop Only */}
-      <footer className="hidden md:block border-t border-[#E8DFD0] bg-[#FFFFFF]/80 backdrop-blur-md py-4 text-center text-xs text-[#64748B] relative z-10">
+      <footer className="hidden md:block border-t border-white/[0.08] bg-[#0B1120]/80 backdrop-blur-md py-4 text-center text-xs text-[#9CA3AF] relative z-10">
         <div className="mx-auto max-w-5xl px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
           <span>
             Muhasabah · Daily Self-Accounting
           </span>
-          <span className="text-[11px] text-[#064E3B] font-medium">
+          <span className="text-[11px] text-[#10B981] font-medium">
             Teachings of Shaykh Nurjan Mirahmadi (Q)
           </span>
         </div>

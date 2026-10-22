@@ -1,5 +1,5 @@
 import React from 'react';
-import { Ear, Eye, MessageSquare, Heart, Shield, Scale, Moon, Check, Sparkles } from 'lucide-react';
+import { Ear, Eye, MessageSquare, Heart, Shield, Scale, Moon, Check, Sparkles, HeartHandshake } from 'lucide-react';
 
 export type JourneyStep =
   | 'niyyah'
@@ -8,6 +8,7 @@ export type JourneyStep =
   | 'tongue'
   | 'heart'
   | 'body'
+  | 'prophetic_connection'
   | 'ledger'
   | 'istighfar'
   | 'summary';
@@ -25,6 +26,7 @@ const STEPS: { id: JourneyStep; label: string; icon: React.ComponentType<{ class
   { id: 'tongue', label: 'Tongue', icon: MessageSquare },
   { id: 'heart', label: 'Heart', icon: Heart },
   { id: 'body', label: 'Body', icon: Shield },
+  { id: 'prophetic_connection', label: 'Prophetic Bond', icon: HeartHandshake },
   { id: 'ledger', label: 'Ledger', icon: Scale },
   { id: 'istighfar', label: 'Istighfar', icon: Moon },
 ];

@@ -1,4 +1,5 @@
-import { GatewayType, EnergyTransaction, GatewayAudit } from '../types/muhasabah';
+import { GatewayType, EnergyTransaction, GatewayAudit, LedgerOption } from '../types/muhasabah';
+import { getRegionalDateInfo } from '../services/calendarService';
 
 export interface GatewayInfo {
   id: GatewayType;
@@ -102,6 +103,27 @@ export const DEFAULT_DEBITS: Omit<EnergyTransaction, 'id'>[] = [
   { type: 'debit', label: 'Overeating / Consuming Heedlessly', points: -15, category: 'Stomach' }
 ];
 
+export const INITIAL_LEDGER_OPTIONS: LedgerOption[] = [
+  ...DEFAULT_CREDITS.map((c, idx) => ({
+    id: `default_credit_${idx + 1}`,
+    type: 'credit' as const,
+    label: c.label,
+    points: c.points,
+    category: c.category,
+    isDefault: true,
+    sortOrder: idx + 1,
+  })),
+  ...DEFAULT_DEBITS.map((d, idx) => ({
+    id: `default_debit_${idx + 1}`,
+    type: 'debit' as const,
+    label: d.label,
+    points: d.points,
+    category: d.category,
+    isDefault: true,
+    sortOrder: DEFAULT_CREDITS.length + idx + 1,
+  })),
+];
+
 export const SURAH_PROTECTIONS = [
   {
     title: 'Surah Al-Falaq',
@@ -128,11 +150,11 @@ export const SURAH_PROTECTIONS = [
 
 export function createDefaultGatewayAudits(): Record<GatewayType, GatewayAudit> {
   return {
-    ears: { gateway: 'ears', state: 'vigilant', enemy: 'none', note: '' },
-    eyes: { gateway: 'eyes', state: 'vigilant', enemy: 'none', note: '' },
-    tongue: { gateway: 'tongue', state: 'vigilant', enemy: 'none', note: '' },
-    heart: { gateway: 'heart', state: 'vigilant', enemy: 'none', note: '' },
-    body: { gateway: 'body', state: 'vigilant', enemy: 'none', note: '' }
+    ears: { gateway: 'ears', state: 'vigilant', states: ['vigilant'], enemy: 'none', enemies: [], selectedActions: [], note: '' },
+    eyes: { gateway: 'eyes', state: 'vigilant', states: ['vigilant'], enemy: 'none', enemies: [], selectedActions: [], note: '' },
+    tongue: { gateway: 'tongue', state: 'vigilant', states: ['vigilant'], enemy: 'none', enemies: [], selectedActions: [], note: '' },
+    heart: { gateway: 'heart', state: 'vigilant', states: ['vigilant'], enemy: 'none', enemies: [], selectedActions: [], note: '' },
+    body: { gateway: 'body', state: 'vigilant', states: ['vigilant'], enemy: 'none', enemies: [], selectedActions: [], note: '' }
   };
 }
 
@@ -141,14 +163,8 @@ export function formatSimpleDate(date: Date = new Date()): string {
 }
 
 export function getApproximateHijriDate(date: Date = new Date()): string {
-  // Graceful approximation based on Islamic calendar offset
   try {
-    const formatter = new Intl.DateTimeFormat('en-US-u-ca-islamic-umalqura', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric'
-    });
-    return formatter.format(date);
+    return getRegionalDateInfo(date).hijriFormatted;
   } catch {
     return '1448 AH';
   }

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { GatewayType, VigilanceState, EnemyTag, GatewayAudit } from '../../types/muhasabah';
-import { GATEWAY_METADATA, ENEMY_METADATA } from '../../data/defaultData';
-import { Ear, Eye, MessageSquare, Heart, Shield, ChevronDown, ChevronUp, AlertCircle, Sparkles } from 'lucide-react';
+import { GATEWAY_METADATA } from '../../data/defaultData';
+import { Ear, Eye, MessageSquare, Heart, Shield, ChevronDown, ChevronUp, AlertCircle, Edit3 } from 'lucide-react';
 
 interface GatewaysAuditSectionProps {
   gateways: Record<GatewayType, GatewayAudit>;
@@ -20,27 +20,39 @@ const VIGILANCE_OPTIONS: {
   id: VigilanceState;
   label: string;
   activeClass: string;
+  dotColor: string;
 }[] = [
   {
     id: 'vigilant',
     label: 'Guarded',
-    activeClass: 'bg-[#ECFDF5] border-[#064E3B] text-[#064E3B] ring-1 ring-[#064E3B]/30',
+    activeClass: 'bg-emerald-500/20 border-emerald-500/60 text-emerald-300 shadow-xs',
+    dotColor: 'bg-emerald-400',
   },
   {
     id: 'minor_lapse',
     label: 'Minor Slip',
-    activeClass: 'bg-[#FDF8ED] border-[#B88728] text-[#B88728] ring-1 ring-[#B88728]/30',
+    activeClass: 'bg-amber-500/20 border-amber-500/60 text-amber-300 shadow-xs',
+    dotColor: 'bg-amber-400',
   },
   {
     id: 'compromised',
-    label: 'Compromised',
-    activeClass: 'bg-rose-50 border-rose-400 text-rose-800 ring-1 ring-rose-300',
+    label: 'Breached',
+    activeClass: 'bg-rose-500/20 border-rose-500/60 text-rose-300 shadow-xs',
+    dotColor: 'bg-rose-400',
   },
   {
     id: 'rectified',
     label: 'Rectified',
-    activeClass: 'bg-sky-50 border-sky-400 text-sky-800 ring-1 ring-sky-300',
+    activeClass: 'bg-sky-500/20 border-sky-500/60 text-sky-300 shadow-xs',
+    dotColor: 'bg-sky-400',
   },
+];
+
+const ADVERSARY_OPTIONS: { key: EnemyTag; label: string }[] = [
+  { key: 'nafs', label: 'Nafs (Ego)' },
+  { key: 'hawa', label: 'Hawa (Desire)' },
+  { key: 'dunya', label: 'Dunya (World)' },
+  { key: 'shaytan', label: 'Shaytan (Whisper)' },
 ];
 
 export const GatewaysAuditSection: React.FC<GatewaysAuditSectionProps> = ({
@@ -59,106 +71,160 @@ export const GatewaysAuditSection: React.FC<GatewaysAuditSectionProps> = ({
     setExpandedNotes((prev) => ({ ...prev, [gw]: !prev[gw] }));
   };
 
-  const gatewayList: GatewayType[] = ['ears', 'eyes', 'tongue', 'heart', 'body'];
+  const gatewayKeys: GatewayType[] = ['ears', 'eyes', 'tongue', 'heart', 'body'];
 
   return (
     <div className="space-y-4">
-      <div className="border-b border-[#E8DFD0] pb-2.5">
-        <h2 className="font-cinzel text-base sm:text-lg font-semibold tracking-wide text-[#1E293B]">
-          01. Gateways & Senses Audit
-        </h2>
+      <div className="flex items-center justify-between pb-3 border-b border-white/[0.08]">
+        <div>
+          <h3 className="text-sm font-bold text-[#F9FAFB] uppercase tracking-wider font-mono">
+            Section 1: The 5 Sensory Gateways
+          </h3>
+          <p className="text-xs text-[#9CA3AF]">Audit vigilance across all physical and spiritual doors</p>
+        </div>
       </div>
 
       <div className="space-y-3">
-        {gatewayList.map((gwKey) => {
-          const info = GATEWAY_METADATA[gwKey];
-          const audit = gateways[gwKey] || { gateway: gwKey, state: 'vigilant', enemy: 'none', note: '' };
-          const Icon = GATEWAY_ICONS[gwKey];
-          const isNoteOpen = expandedNotes[gwKey] || Boolean(audit.note);
-          const needsEnemyCheck = audit.state === 'minor_lapse' || audit.state === 'compromised';
+        {gatewayKeys.map((gw) => {
+          const info = GATEWAY_METADATA[gw];
+          const audit: GatewayAudit = gateways[gw] || {
+            gateway: gw,
+            state: 'vigilant',
+            states: ['vigilant'],
+            enemy: 'none',
+            enemies: [],
+            note: '',
+          };
+          const Icon = GATEWAY_ICONS[gw];
+          const activeStates: VigilanceState[] = audit.states && audit.states.length > 0
+            ? audit.states
+            : [audit.state || 'vigilant'];
+
+          const activeEnemies: EnemyTag[] = audit.enemies && audit.enemies.length > 0
+            ? audit.enemies
+            : (audit.enemy && audit.enemy !== 'none' ? [audit.enemy] : []);
+
+          const needsEnemy = activeStates.includes('minor_lapse') || activeStates.includes('compromised');
+          const isNoteOpen = expandedNotes[gw];
+
+          const handleToggleState = (stateId: VigilanceState) => {
+            let nextStates: VigilanceState[];
+            if (activeStates.includes(stateId)) {
+              nextStates = activeStates.length <= 1 ? ['vigilant'] : activeStates.filter((s) => s !== stateId);
+            } else {
+              nextStates = [...activeStates, stateId];
+            }
+            const primaryState: VigilanceState = nextStates.includes('compromised')
+              ? 'compromised'
+              : nextStates.includes('minor_lapse')
+              ? 'minor_lapse'
+              : nextStates.includes('rectified')
+              ? 'rectified'
+              : 'vigilant';
+
+            onChangeGateway(gw, {
+              state: primaryState,
+              states: nextStates,
+            });
+          };
+
+          const handleToggleEnemy = (enemyKey: EnemyTag) => {
+            let nextEnemies: EnemyTag[];
+            if (activeEnemies.includes(enemyKey)) {
+              nextEnemies = activeEnemies.filter((e) => e !== enemyKey);
+            } else {
+              nextEnemies = [...activeEnemies, enemyKey];
+            }
+            onChangeGateway(gw, {
+              enemy: nextEnemies.length > 0 ? nextEnemies[0] : 'none',
+              enemies: nextEnemies,
+            });
+          };
 
           return (
             <div
-              key={gwKey}
-              className="rounded-2xl border border-[#E8DFD0] bg-[#FFFFFF] p-4 sm:p-5 transition-all shadow-xs"
+              key={gw}
+              className="p-3.5 sm:p-4 rounded-2xl bg-[#0B1120]/60 border border-white/[0.06] space-y-3"
             >
-              {/* Card Header */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#E8DFD0] pb-3">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#064E3B]/10 border border-[#064E3B]/20 text-[#064E3B]">
-                    <Icon className="h-4 w-4" />
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="w-8 h-8 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-[#10B981] shrink-0">
+                    <Icon className="w-4 h-4" />
                   </div>
-                  <div>
+                  <div className="truncate">
                     <div className="flex items-center gap-2">
-                      <span className="font-cinzel text-sm font-semibold text-[#1E293B]">
-                        {info.title}
-                      </span>
-                      <span className="text-[11px] text-[#064E3B] font-mono font-medium">
-                        ({info.spiritualTitle})
+                      <span className="text-sm font-semibold text-[#F9FAFB]">{info.title}</span>
+                      <span className="text-[10px] font-arabic text-[#10B981] opacity-80 hidden sm:inline">
+                        {info.spiritualTitle}
                       </span>
                     </div>
-                    <span className="text-xs text-[#64748B]">{info.subTitle}</span>
+                    <span className="text-[11px] text-[#9CA3AF] line-clamp-1">{info.question}</span>
                   </div>
                 </div>
 
-                {/* Status indicator text */}
-                <div className="text-xs text-[#64748B] flex items-center gap-1.5 self-start sm:self-auto">
-                  <span className="text-[11px]">State:</span>
-                  <span className="font-semibold text-[#1E293B]">
-                    {VIGILANCE_OPTIONS.find((o) => o.id === audit.state)?.label}
-                  </span>
+                <button
+                  type="button"
+                  onClick={() => toggleNote(gw)}
+                  className={`p-1.5 rounded-lg text-xs transition-colors shrink-0 ${
+                    audit.note ? 'text-[#10B981] bg-emerald-500/15' : 'text-[#9CA3AF] hover:text-[#F9FAFB]'
+                  }`}
+                  title={audit.note ? 'Edit note' : 'Add note'}
+                >
+                  <Edit3 className="w-3.5 h-3.5" />
+                </button>
+              </div>
+
+              {/* State Segmented Grid */}
+              <div className="space-y-1">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+                  {VIGILANCE_OPTIONS.map((opt) => {
+                    const isSelected = activeStates.includes(opt.id);
+                    return (
+                      <button
+                        key={opt.id}
+                        type="button"
+                        onClick={() => handleToggleState(opt.id)}
+                        className={`flex items-center justify-between px-2.5 py-1.5 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
+                          isSelected
+                            ? opt.activeClass
+                            : 'bg-[#1F2937]/30 border-white/[0.06] text-[#9CA3AF] hover:bg-white/[0.04] hover:text-[#F9FAFB]'
+                        }`}
+                      >
+                        <div className="flex items-center gap-1.5 truncate">
+                          <span className={`w-1.5 h-1.5 rounded-full ${opt.dotColor} shrink-0`} />
+                          <span className="truncate">{opt.label}</span>
+                        </div>
+                        {isSelected && <span className="text-[10px] font-bold text-white">✓</span>}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
-              {/* Core Contemplative Guidance */}
-              <p className="mt-3 text-xs leading-relaxed text-[#64748B]">
-                {info.question}
-              </p>
-
-              {/* 4-State Vigilance Selector */}
-              <div className="mt-3 grid grid-cols-2 sm:grid-cols-4 gap-2">
-                {VIGILANCE_OPTIONS.map((opt) => {
-                  const isSelected = audit.state === opt.id;
-                  return (
-                    <button
-                      key={opt.id}
-                      type="button"
-                      onClick={() => onChangeGateway(gwKey, { state: opt.id })}
-                      className={`rounded-xl border px-2.5 py-2 text-left text-xs transition-all min-h-[44px] ${
-                        isSelected
-                          ? opt.activeClass
-                          : 'border-[#E8DFD0] bg-[#FAF7F2] text-[#64748B] hover:border-[#064E3B] hover:text-[#1E293B]'
-                      }`}
-                    >
-                      <div className="font-semibold">{opt.label}</div>
-                    </button>
-                  );
-                })}
-              </div>
-
-              {/* Enemy Diagnosis */}
-              {needsEnemyCheck && (
-                <div className="mt-3 rounded-xl border border-[#C5A059]/40 bg-[#FDF8ED] p-3 animate-in fade-in duration-200">
-                  <div className="flex items-center gap-1 text-[11px] font-semibold text-[#B88728] mb-1.5">
-                    <AlertCircle className="h-3.5 w-3.5" />
-                    <span>Adversary: Which enemy bypassed this gate?</span>
+              {/* Adversary diagnosis */}
+              {needsEnemy && (
+                <div className="pt-2 border-t border-white/[0.06] space-y-1.5">
+                  <div className="flex items-center justify-between text-[11px] font-medium text-amber-400">
+                    <div className="flex items-center gap-1">
+                      <AlertCircle className="w-3 h-3" />
+                      <span>Root Adversary Diagnosed:</span>
+                    </div>
                   </div>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
-                    {(['nafs', 'hawa', 'dunya', 'shaytan'] as const).map((enemyKey) => {
-                      const isEnemySelected = audit.enemy === enemyKey;
-                      const enemyInfo = ENEMY_METADATA[enemyKey];
+                    {ADVERSARY_OPTIONS.map(({ key, label }) => {
+                      const isSelected = activeEnemies.includes(key);
                       return (
                         <button
-                          key={enemyKey}
+                          key={key}
                           type="button"
-                          onClick={() => onChangeGateway(gwKey, { enemy: enemyKey })}
-                          className={`rounded-lg border px-2 py-1 text-left text-[11px] transition-all min-h-[38px] ${
-                            isEnemySelected
-                              ? 'border-[#064E3B] bg-[#064E3B] text-white shadow-xs'
-                              : 'border-[#E8DFD0] bg-[#FFFFFF] text-[#64748B] hover:text-[#1E293B]'
+                          onClick={() => handleToggleEnemy(key)}
+                          className={`py-1 px-2 rounded-lg border text-center text-[11px] font-medium transition-all cursor-pointer ${
+                            isSelected
+                              ? 'bg-amber-500/20 border-amber-500 text-amber-300'
+                              : 'bg-[#1F2937]/30 border-white/[0.06] text-[#9CA3AF] hover:text-[#F9FAFB]'
                           }`}
                         >
-                          <div className="font-semibold">{enemyInfo.name.split(' ')[0]}</div>
+                          <span>{label} {isSelected ? '✓' : ''}</span>
                         </button>
                       );
                     })}
@@ -166,29 +232,18 @@ export const GatewaysAuditSection: React.FC<GatewaysAuditSectionProps> = ({
                 </div>
               )}
 
-              {/* Optional Micro-Note Toggle */}
-              <div className="mt-3">
-                <button
-                  type="button"
-                  onClick={() => toggleNote(gwKey)}
-                  className="flex items-center gap-1 text-[11px] text-[#064E3B] font-semibold hover:underline"
-                >
-                  {isNoteOpen ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
-                  <span>{audit.note ? 'Edit observation' : '+ Add private note'}</span>
-                </button>
-
-                {isNoteOpen && (
-                  <div className="mt-2">
-                    <textarea
-                      rows={2}
-                      value={audit.note}
-                      onChange={(e) => onChangeGateway(gwKey, { note: e.target.value })}
-                      placeholder="Brief note on what entered or was protected..."
-                      className="w-full rounded-xl border border-[#E8DFD0] bg-[#FAF7F2] p-2.5 text-xs text-[#1E293B] placeholder-[#64748B]/50 focus:border-[#064E3B] focus:bg-[#FFFFFF] focus:outline-none"
-                    />
-                  </div>
-                )}
-              </div>
+              {/* Note editor */}
+              {isNoteOpen && (
+                <div className="pt-2 border-t border-white/[0.06]">
+                  <textarea
+                    rows={2}
+                    value={audit.note}
+                    onChange={(e) => onChangeGateway(gw, { note: e.target.value })}
+                    placeholder="Brief observation..."
+                    className="w-full rounded-xl border border-white/[0.08] bg-[#0B1120]/70 p-2.5 text-xs text-[#F9FAFB] placeholder-[#9CA3AF]/40 focus:border-emerald-500/50 focus:outline-none"
+                  />
+                </div>
+              )}
             </div>
           );
         })}

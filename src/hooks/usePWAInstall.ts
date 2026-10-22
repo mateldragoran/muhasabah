@@ -9,6 +9,7 @@ export function usePWAInstall() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isInstalled, setIsInstalled] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
+  const [isInAppBrowser, setIsInAppBrowser] = useState(false);
 
   useEffect(() => {
     // Detect standalone mode (already installed or running inside standalone PWA window)
@@ -17,10 +18,19 @@ export function usePWAInstall() {
       (window.navigator as unknown as { standalone?: boolean }).standalone === true;
     setIsInstalled(isStandalone);
 
-    // Detect iOS devices
+    // Detect iOS & iPadOS devices (including iPadOS 13+ which reports as MacIntel with touch points)
     const userAgent = window.navigator.userAgent.toLowerCase();
-    const isIOSDevice = /iphone|ipad|ipod/.test(userAgent);
+    const isIOSDevice =
+      /iphone|ipad|ipod/.test(userAgent) ||
+      (window.navigator.platform === 'MacIntel' && window.navigator.maxTouchPoints > 1);
     setIsIOS(isIOSDevice);
+
+    // Detect if running inside an in-app browser (e.g. WhatsApp, Instagram, Telegram, Facebook, etc.)
+    const isInsideApp =
+      /fban|fbav|instagram|line|micromessenger|whatsapp|snapchat|twitter|tiktok|threads|discord/i.test(
+        userAgent
+      ) || (!/safari/i.test(userAgent) && /applewebkit/i.test(userAgent) && isIOSDevice);
+    setIsInAppBrowser(isInsideApp);
 
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
@@ -57,6 +67,7 @@ export function usePWAInstall() {
     isInstallable: !!deferredPrompt,
     isInstalled,
     isIOS,
+    isInAppBrowser,
     install,
     installPWA: install,
   };

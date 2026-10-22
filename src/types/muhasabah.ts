@@ -12,7 +12,10 @@ export type EnemyTag = 'none' | 'nafs' | 'hawa' | 'dunya' | 'shaytan';
 export interface GatewayAudit {
   gateway: GatewayType;
   state: VigilanceState;
+  states?: VigilanceState[];
   enemy: EnemyTag;
+  enemies?: EnemyTag[];
+  selectedActions?: string[];
   note: string;
 }
 
@@ -25,7 +28,21 @@ export interface EnergyTransaction {
   isCustom?: boolean;
 }
 
+export interface LedgerOption {
+  id: string;
+  type: 'credit' | 'debit';
+  label: string;
+  points: number;
+  category?: string;
+  isDefault?: boolean;
+  sortOrder?: number;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 export type BalanceStatus = 'surplus' | 'balanced' | 'deficit';
+
+export type PropheticConnectionState = 'stronger' | 'weaker' | null;
 
 export interface MuhasabaRecord {
   id: string;
@@ -33,6 +50,8 @@ export interface MuhasabaRecord {
   date: string; // YYYY-MM-DD
   hijriDate?: string;
   gateways: Record<GatewayType, GatewayAudit>;
+  propheticConnection?: PropheticConnectionState;
+  propheticConnectionNote?: string;
   transactions: EnergyTransaction[];
   netEnergy: number;
   balanceStatus: BalanceStatus;
